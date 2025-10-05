@@ -868,3 +868,51 @@
     </script>
 </body>
 </html>
+const products = [
+  { name: "رصيد Google Play" },
+  { name: "رصيد Apple Store" },
+  { name: "Netflix" },
+  { name: "USDT" },
+  { name: "رقم أمريكي" }
+];
+window.onload = function() {
+  const container = document.getElementById("productsContainer");
+  products.forEach(product => {
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.innerHTML = `
+      <h3>${product.name}</h3>
+      <button onclick="addToCart('${product.name}')">شراء</button>
+    `;
+    container.appendChild(card);
+  });
+};
+function addToCart(productName) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || {};
+    cart[productName] = (cart[productName] || 0) + 1;
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function openCart() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || {};
+    let cartList = document.getElementById('cartItems');
+    cartList.innerHTML = '';
+    for (let item in cart) {
+        cartList.innerHTML += `<li>${item} - الكمية: ${cart[item]}</li>`;
+    }
+    document.getElementById('cartPopup').style.display = 'block';
+}
+
+function closeCart() {
+    document.getElementById('cartPopup').style.display = 'none';
+}
+
+function clearCart() {
+    localStorage.removeItem('cart');
+    openCart();
+}
+
+function confirmOrder() {
+    alert("تم إرسال الطلب! سيتم التواصل معك قريبًا.");
+    clearCart();
+}
