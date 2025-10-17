@@ -1,3 +1,28 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>عربة التسوق</title>
+</head>
+<body>
+    <h1>عربة التسوق</h1>
+    {% if cart %}
+    <ul>
+        {% for item in cart %}
+        <li>
+            {{ item.product.name }} - {{ item.product.price }} ريال × {{ item.quantity }}
+            = {{ item.product.price * item.quantity }} ريال
+            <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}">إزالة</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <p>المجموع: {{ total }} ريال</p>
+    {% else %}
+    <p>السلة فارغة</p>
+    {% endif %}
+    <a href="{{ url_for('home') }}">العودة للمنتجات</a>
+</body>
+</html>
 <body> <!-- زر فتح السلة --> 
   <button 
   onclick="openCart()">فتح 
