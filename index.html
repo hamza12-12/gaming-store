@@ -1,36 +1,747 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>عربة التسوق</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>متجر TOP لشحن التطبيقات والألعاب</title>
+
+  <!-- خطوط -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&family=Tajawal:wght@700&display=swap" rel="stylesheet">
+
+  <!-- أيقونات -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root{
+      --purple-1:#6a11cb;
+      --purple-2:#501ba5;
+      --accent:#ffd700;
+      --muted:#f3f4f8;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family: 'Cairo', sans-serif;
+      margin:0;
+      background:var(--muted);
+      color:#222;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ====== Header / Logo ====== */
+    header{
+      background: linear-gradient(90deg,var(--purple-1),#2575fc);
+      color:#fff;
+      padding:28px 16px;
+      position:sticky;
+      top:0;
+      z-index:1000;
+      box-shadow:0 6px 18px rgba(0,0,0,0.12);
+      display:flex;
+      align-items:center;
+      gap:16px;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex:1;
+      min-width:240px;
+    }
+
+    .logo-text{
+      font-family:'Tajawal', sans-serif;
+      font-size:44px; /* كبير شوي كما طلبت */
+      line-height:1;
+      font-weight:700;
+      color:#fff;
+    }
+
+    .logo-text span{ color:var(--accent); }
+
+    nav{
+      display:flex;
+      gap:18px;
+      align-items:center;
+    }
+    nav a{
+      color:rgba(255,255,255,0.95);
+      text-decoration:none;
+      font-weight:600;
+      transition:all .2s;
+    }
+    nav a:hover{ color:var(--accent); transform:translateY(-2px); }
+
+    .cart-icon{
+      position:relative;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .cart-icon i{ font-size:22px; }
+    .cart-count{
+      position:absolute;
+      top:-8px;
+      left:-8px;
+      background:#ff5252;
+      color:white;
+      border-radius:50%;
+      padding:3px 7px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    /* ====== Main layout ====== */
+    main{
+      max-width:1200px;
+      margin:20px auto;
+      padding:0 16px 60px;
+    }
+
+    .top-row{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .filter-bar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      background:white;
+      padding:12px;
+      border-radius:10px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06);
+      flex:1;
+      min-width:280px;
+    }
+    .filter-bar input, .filter-bar select{
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #e6e6ef;
+      font-size:14px;
+      text-align:center;
+      outline:none;
+      min-width:140px;
+    }
+
+    /* ====== Grid of products ====== */
+    .products{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:14px;
+    }
+
+    .product{
+      background:white;
+      padding:12px;
+      border-radius:12px;
+      box-shadow:0 4px 14px rgba(0,0,0,0.06);
+      text-align:center;
+      transition:transform .18s, box-shadow .18s;
+    }
+    .product:hover{ transform:translateY(-6px); box-shadow:0 10px 24px rgba(0,0,0,0.09); }
+
+    .product img{ width:100%; height:120px; object-fit:contain; border-radius:8px; background:#fafafa; }
+    .product h3{ font-size:16px; margin:10px 0 6px; }
+    .price{ color:var(--purple-1); font-weight:700; margin-bottom:10px; }
+    .product .btn{
+      display:inline-block;
+      padding:8px 10px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      font-weight:700;
+      margin:6px 6px 0;
+    }
+    .btn-add{ background:var(--purple-1); color:white; }
+    .btn-bank{ background:#25D366; color:white; }
+
+    /* ====== Sidebar Cart ====== */
+    .cart-sidebar{
+      position:fixed;
+      top:0;
+      right:-380px;
+      width:360px;
+      height:100vh;
+      background:white;
+      z-index:2000;
+      padding:18px;
+      box-shadow:-6px 0 24px rgba(0,0,0,0.14);
+      transition:right .32s ease;
+      overflow:auto;
+    }
+    .cart-sidebar.active{ right:0; }
+    .cart-item{ display:flex; gap:10px; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; }
+    .cart-total{ font-weight:800; margin-top:12px; }
+
+    .close-cart{ background:#ff5252; color:white; border:none; padding:8px 10px; border-radius:8px; cursor:pointer; width:100%; font-weight:700; }
+
+    /* ====== Modal دفع ====== */
+    .modal{
+      display:none;
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      width:95%;
+      max-width:520px;
+      background:white;
+      padding:18px;
+      border-radius:12px;
+      box-shadow:0 24px 60px rgba(0,0,0,0.18);
+      z-index:2500;
+    }
+    .modal.active{ display:block; }
+    .modal .close-btn{ position:absolute; top:10px; left:12px; cursor:pointer; font-size:20px; color:#555; }
+
+    .pay-methods{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+    .pay-methods button{ padding:8px 12px; border-radius:8px; border:1px solid #eee; background:#fafafa; cursor:pointer; font-weight:700; }
+    .pay-methods button.active{ background:var(--purple-1); color:white; border-color:var(--purple-1); }
+
+    .receipt-preview{ margin-top:10px; display:flex; gap:10px; align-items:center; }
+    .receipt-preview img{ max-width:80px; max-height:80px; border-radius:8px; object-fit:cover; border:1px solid #eee; }
+
+    .wa-button{
+      display:block;
+      width:100%;
+      text-align:center;
+      padding:12px;
+      border-radius:10px;
+      background:#25D366;
+      color:white;
+      font-weight:800;
+      text-decoration:none;
+      margin-top:10px;
+    }
+
+    /* ====== Sections below ====== */
+    section.block{
+      margin-top:22px;
+      background:white;
+      padding:14px;
+      border-radius:10px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.04);
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;
+      margin-top:10px;
+    }
+
+    .small-card{
+      padding:12px;
+      border-radius:8px;
+      background:#fff;
+      text-align:center;
+      border:1px solid #f0f0f6;
+    }
+
+    footer{
+      margin-top:30px;
+      text-align:center;
+      padding:18px;
+      color:#fff;
+      background:var(--purple-1);
+    }
+
+    @media (max-width:800px){
+      .logo-text{ font-size:34px; }
+      .filter-bar{ min-width: unset; width:100%; }
+      .products{ grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); }
+      .cart-sidebar{ width:92%; }
+    }
+  </style>
 </head>
 <body>
-    <h1>عربة التسوق</h1>
-    {% if cart %}
-    <ul>
-        {% for item in cart %}
-        <li>
-            {{ item.product.name }} - {{ item.product.price }} ريال × {{ item.quantity }}
-            = {{ item.product.price * item.quantity }} ريال
-            <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}">إزالة</a>
-        </li>
-        {% endfor %}
-    </ul>
-    <p>المجموع: {{ total }} ريال</p>
-    {% else %}
-    <p>السلة فارغة</p>
-    {% endif %}
-    <a href="{{ url_for('home') }}">العودة للمنتجات</a>
-</body>
-</html>
-<body> <!-- زر فتح السلة --> 
-  <button 
-  onclick="openCart()">فتح 
-  السلة</button> <!-- السلة --> 
-  <div id="cart">
-    <p>هذه السلة</p> <button 
-    onclick="closeCart()">إغلاق</button>
-  </div> <script 
-  src="Script.js"></script>
-</body>
 
+<header>
+  <div class="logo">
+    <!-- أيقونة صغيرة (اختياري) -->
+    <div style="width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;">
+      <i class="fa-solid fa-gem" style="color:var(--accent);font-size:20px;"></i>
+    </div>
+    <div>
+      <div class="logo-text">متجر <span>TOP</span></div>
+      <div style="font-size:12px;opacity:0.95;margin-top:4px;">شحن التطبيقات، الألعاب، البطاقات والخدمات الرقمية</div>
+    </div>
+  </div>
+
+  <nav>
+    <a href="#apps">التطبيقات</a>
+    <a href="#games">الألعاب</a>
+    <a href="#crypto">عملات رقمية</a>
+    <a href="#cards">بطاقات</a>
+    <a href="#dev">برمجة</a>
+    <a href="#topups">أرصدة</a>
+  </nav>
+
+  <div class="cart-icon" id="cartIcon" title="السلة">
+    <i class="fas fa-shopping-cart"></i>
+    <span class="cart-count">0</span>
+  </div>
+</header>
+
+<main>
+  <div class="top-row">
+    <div class="filter-bar">
+      <input id="searchInput" placeholder="🔍 ابحث عن منتج أو خدمة..." />
+      <select id="categoryFilter">
+        <option value="all">كل الفئات</option>
+        <option value="apps">التطبيقات</option>
+        <option value="games">الألعاب</option>
+        <option value="crypto">عملات رقمية</option>
+        <option value="cards">بطاقات</option>
+        <option value="dev">برمجة</option>
+        <option value="topups">أرصدة</option>
+      </select>
+      <select id="sortPrice">
+        <option value="default">ترتيب السعر</option>
+        <option value="low">من الأقل إلى الأعلى</option>
+        <option value="high">من الأعلى إلى الأقل</option>
+      </select>
+    </div>
+
+    <div style="min-width:220px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <a href="#contact" style="background:#fff;padding:10px 12px;border-radius:10px;text-decoration:none;font-weight:700;color:#333;box-shadow:0 2px 8px rgba(0,0,0,0.04);">اتصل/واتساب: 963964659342</a>
+      <a href="#social" style="background:var(--accent);padding:10px 12px;border-radius:10px;color:#111;font-weight:800;text-decoration:none;">تابعنا</a>
+    </div>
+  </div>
+
+  <!-- منتجات -->
+  <section id="products" class="products" aria-live="polite"></section>
+
+  <!-- قسم التطبيقات -->
+  <section id="apps" class="block">
+    <h3>التطبيقات (شحن واشتراكات)</h3>
+    <div class="grid-3">
+      <div class="small-card"><strong>جوجل بلاي</strong><div>بطاقات وقيم شحن</div></div>
+      <div class="small-card"><strong>نتفليكس</strong><div>اشتراكات وبطاقات</div></div>
+      <div class="small-card"><strong>سبوتيفاي</strong><div>اشتراكات وبطاقات</div></div>
+      <div class="small-card"><strong>يوتيوب بريميوم</strong><div>اشتراك شهري</div></div>
+      <div class="small-card"><strong>تطبيقات مدفوعة</strong><div>شحن و Activation</div></div>
+    </div>
+  </section>
+
+  <!-- قسم الألعاب -->
+  <section id="games" class="block">
+    <h3>الألعاب (شحن واشتراكات)</h3>
+    <div class="grid-3">
+      <div class="small-card"><strong>PUBG</strong><div>UC شحن</div></div>
+      <div class="small-card"><strong>Fortnite</strong><div>V-Bucks شحن</div></div>
+      <div class="small-card"><strong>Free Fire</strong><div>Diamonds شحن</div></div>
+      <div class="small-card"><strong>Mobile Legends</strong><div>شحن</div></div>
+      <div class="small-card"><strong>Roblox</strong><div>Robux شحن</div></div>
+      <div class="small-card"><strong>Call of Duty</strong><div>شحن</div></div>
+    </div>
+  </section>
+
+  <!-- عملات رقمية -->
+  <section id="crypto" class="block">
+    <h3>عملات رقمية (Top-ups / رموز)</h3>
+    <div class="grid-3">
+      <div class="small-card"><strong>Bitcoin (BTC)</strong><div>شراء/شحن رموز</div></div>
+      <div class="small-card"><strong>Ethereum (ETH)</strong><div>شراء/شحن رموز</div></div>
+      <div class="small-card"><strong>USDT</strong><div>تحويل فوري</div></div>
+    </div>
+  </section>
+
+  <!-- برمجة وخدمات -->
+  <section id="dev" class="block">
+    <h3>خدمات برمجة وويب</h3>
+    <div class="grid-3">
+      <div class="small-card"><strong>تصميم HTML</strong><div>صفحة ثابتة/متجاوبة</div></div>
+      <div class="small-card"><strong>CSS & تعديل UI</strong><div>تحسين المظهر والتجاوب</div></div>
+      <div class="small-card"><strong>برمجة صغيرة</strong><div>Fixes، Integration</div></div>
+    </div>
+  </section>
+
+  <!-- ارصدة -->
+  <section id="topups" class="block">
+    <h3>أرصدة وحلول محلية</h3>
+    <div class="grid-3">
+      <div class="small-card"><strong>شام كاش</strong><div>رصيد وعروض</div></div>
+      <div class="small-card"><strong>سريـاتيل كاش</strong><div>شحن رصيد</div></div>
+      <div class="small-card"><strong>MTN</strong><div>شحن رصيد</div></div>
+    </div>
+  </section>
+
+  <!-- بطاقات -->
+  <section id="cards" class="block">
+    <h3>بطاقات (Google Play, Visa, MasterCard)</h3>
+    <div class="grid-3">
+      <div class="small-card"><strong>Google Play</strong><div>بطاقات بقيم متعددة</div></div>
+      <div class="small-card"><strong>بطاقات فيزا / ماستر</strong><div>كروت مسبقة الدفع</div></div>
+    </div>
+  </section>
+
+  <!-- واتساب اجنبي ووسائل تواصل -->
+  <section id="contact" class="block">
+    <h3>أرقام واتساب (أجنبية) & تواصل سريع</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+      <!-- ضع هنا الأرقام الأجنبية كنماذج -->
+      <a class="small-card" style="text-decoration:none;color:inherit" href="https://wa.me/201234567890?text=مرحبًا%20أريد%20مساعدة" target="_blank">🇪🇬 مصر: +20 123 456 7890</a>
+      <a class="small-card" style="text-decoration:none;color:inherit" href="https://wa.me/971501234567?text=مرحبًا%20أريد%20مساعدة" target="_blank">🇦🇪 الإمارات: +971 50 123 4567</a>
+      <a class="small-card" style="text-decoration:none;color:inherit" href="https://wa.me/9647012345678?text=مرحبًا%20أريد%20مساعدة" target="_blank">🇮🇶 العراق: +964 70 123 45678</a>
+    </div>
+
+    <h4 style="margin-top:12px;">متابعون ووسائل التواصل</h4>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <a class="small-card" href="#" style="text-decoration:none;color:inherit">فيسبوك (تابعنا)</a>
+      <a class="small-card" href="#" style="text-decoration:none;color:inherit">إنستغرام</a>
+      <a class="small-card" href="#" style="text-decoration:none;color:inherit">تويتر</a>
+      <a class="small-card" href="#" style="text-decoration:none;color:inherit">تيك توك</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- سلة جانبية -->
+<div class="cart-sidebar" id="cartSidebar" aria-hidden="true">
+  <button class="close-cart" id="closeCart">إغلاق السلة</button>
+  <h3>🛒 سلة التسوق</h3>
+  <div id="cartItems" style="margin-top:10px;"></div>
+  <div class="cart-total">الإجمالي: <span id="cartTotal">$0</span></div>
+  <div style="margin-top:12px;font-size:13px;color:#666">بعد اختيار منتجاتك اضغط "دفع بنكي" لإرسال رسالة واتساب تلقائية.</div>
+</div>
+
+<!-- Overlay -->
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2200;"></div>
+
+<!-- Modal الدفع -->
+<div class="modal" id="bankModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="close-btn" id="closeModal">&times;</div>
+  <h3 id="modalTitle">إتمام الدفع</h3>
+  <div id="orderSummary" style="margin-top:8px;font-weight:700;"></div>
+
+  <div style="margin-top:12px;">
+    <div style="font-weight:800;margin-bottom:6px;">اختر طريقة التحويل</div>
+    <div class="pay-methods" id="payMethods">
+      <button data-method="سيرياتيل كاش">سيرياتيل كاش</button>
+      <button data-method="شام كاش">شام كاش</button>
+      <button data-method="حوالة مكتبية">حوالة مكتبية</button>
+      <button data-method="MTN">MTN</button>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label style="font-weight:700;">تحميل صورة الإيصال (اختياري)</label>
+      <input type="file" id="receiptInput" accept="image/*" style="display:block;margin-top:8px;">
+      <div class="receipt-preview" id="receiptPreview"></div>
+      <div style="margin-top:8px;font-size:13px;color:#666">
+        ملاحظة: لا يخزن الموقع هذه الصورة على خادم. يرجى إرسال صورة الإيصال عبر واتساب بعد الضغط على زر "إرسال إثبات الدفع عبر واتساب".
+      </div>
+    </div>
+
+    <a id="waSend" class="wa-button" href="#" target="_blank">إرسال إثبات الدفع عبر واتساب</a>
+  </div>
+
+  <div style="margin-top:10px;color:#333;font-size:13px;">
+    <strong>معلومات الحساب (للاطلاع):</strong>
+    <ul style="padding-left:18px;margin:8px 0 0 0;">
+      <li>سيرياتيل كاش: 963995606528 - اسم المستفيد: حمزه محمود عبد الرحمن</li>
+      <li>شام كاش: رقم الحساب مثالياً متوفر - يرجى التواصل</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  © 2025 متجر TOP — جميع الحقوق محفوظة — تواصل واتساب: 963964659342
+</footer>
+
+<script>
+  /********** بيانات المتغيرات الأساسية **********/
+  const MAIN_WA_NUMBER = '963964659342'; // رقم واتساب الأساس الذي طلبته
+  // بيانات المنتجات كما طلبت (أضفت مجموعة لكل فئة)
+  const productsData = [
+    // تطبيقات
+    { id: 'app_gp_1', name: 'بطاقة Google Play 10$', price: 10, category: 'apps', img: 'https://i.imgur.com/KgULoU3.png' },
+    { id: 'app_nf_1', name: 'اشتراك Netflix (شهر)', price: 20, category: 'apps', img: 'https://i.imgur.com/1pDcv2F.png' },
+
+    // ألعاب
+    { id: 'game_pubg_1', name: 'شحن ببجي UC - 100 UC', price: 10, category: 'games', img: 'https://i.imgur.com/1pDcv2F.png' },
+    { id: 'game_fn_1', name: 'شحن فورتنايت V-Bucks - 1000', price: 15, category: 'games', img: 'https://i.imgur.com/xEecbqG.png' },
+    { id: 'game_ff_1', name: 'شحن فري فاير Diamonds - 200', price: 8, category: 'games', img: 'https://i.imgur.com/GDTBzBe.png' },
+
+    // عملات رقمية (نماذج خدمات)
+    { id: 'crypto_btc', name: 'تحويل Bitcoin (خدمة)', price: 50, category: 'crypto', img: 'https://i.imgur.com/3Jc6k5Q.png' },
+    { id: 'crypto_usdt', name: 'شراء USDT (خدمة)', price: 25, category: 'crypto', img: 'https://i.imgur.com/3Jc6k5Q.png' },
+
+    // بطاقات
+    { id: 'card_visa_50', name: 'بطاقة فيزا 50$', price: 48, category: 'cards', img: 'https://i.imgur.com/NbYEV9F.png' },
+    { id: 'card_gp_25', name: 'بطاقة Google Play 25$', price: 24, category: 'cards', img: 'https://i.imgur.com/KgULoU3.png' },
+
+    // خدمات برمجة
+    { id: 'svc_html', name: 'خدمة HTML بسيطة', price: 15, category: 'dev', img: 'https://i.imgur.com/8Km9tLL.png' },
+    { id: 'svc_css', name: 'تصميم CSS / UI', price: 25, category: 'dev', img: 'https://i.imgur.com/8Km9tLL.png' },
+
+    // أرصدة
+    { id: 'top_sham_10', name: 'رصيد شام كاش 10$', price: 10, category: 'topups', img: 'https://i.imgur.com/1pDcv2F.png' },
+    { id: 'top_syr_10', name: 'رصيد سرياتيل 10$', price: 10, category: 'topups', img: 'https://i.imgur.com/1pDcv2F.png' },
+    { id: 'top_mtn_10', name: 'رصيد MTN 10$', price: 10, category: 'topups', img: 'https://i.imgur.com/1pDcv2F.png' }
+  ];
+
+  /********** عناصر DOM **********/
+  const productsContainer = document.getElementById('products');
+  const searchInput = document.getElementById('searchInput');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const sortPrice = document.getElementById('sortPrice');
+  const cartSidebar = document.getElementById('cartSidebar');
+  const overlay = document.getElementById('overlay');
+  const cartItems = document.getElementById('cartItems');
+  const cartTotal = document.getElementById('cartTotal');
+  const cartCount = document.querySelector('.cart-count');
+  const cartIcon = document.getElementById('cartIcon');
+  const bankModal = document.getElementById('bankModal');
+  const closeModal = document.getElementById('closeModal');
+  const orderSummary = document.getElementById('orderSummary');
+  const payMethods = document.getElementById('payMethods');
+  const waSend = document.getElementById('waSend');
+  const receiptInput = document.getElementById('receiptInput');
+  const receiptPreview = document.getElementById('receiptPreview');
+  const closeCart = document.getElementById('closeCart');
+
+  let cart = [];
+  let selectedProduct = null;
+  let selectedPayMethod = null;
+  let uploadedReceiptDataUrl = null;
+
+  /********** دوال العرض والإضافة للسلة **********/
+  function renderProducts(data){
+    productsContainer.innerHTML = '';
+    data.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'product';
+      div.innerHTML = `
+        <img src="${p.img}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <div class="price">$${p.price}</div>
+        <div>
+          <button class="btn btn-add" onclick="addToCart('${p.id}')"><i class="fa-solid fa-plus"></i> أضف للسلة</button>
+          <button class="btn btn-bank" onclick="openPayment('${p.id}')"><i class="fa-solid fa-university"></i> دفع/إثبات</button>
+        </div>
+      `;
+      productsContainer.appendChild(div);
+    });
+  }
+
+  // فلترة وبحث وترتيب
+  function filterProducts(){
+    const q = searchInput.value.trim().toLowerCase();
+    const cat = categoryFilter.value;
+    const sort = sortPrice.value;
+    let filtered = [...productsData];
+    if(q) filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
+    if(cat !== 'all') filtered = filtered.filter(p => p.category === cat);
+    if(sort === 'low') filtered.sort((a,b)=> a.price - b.price);
+    else if(sort === 'high') filtered.sort((a,b)=> b.price - a.price);
+    renderProducts(filtered);
+  }
+
+  searchInput.addEventListener('keyup', filterProducts);
+  categoryFilter.addEventListener('change', filterProducts);
+  sortPrice.addEventListener('change', filterProducts);
+
+  // تشغيل أول عرض
+  renderProducts(productsData);
+
+  // إضافة للسلة
+  function addToCart(productId){
+    const p = productsData.find(x => x.id === productId);
+    if(!p) return;
+    cart.push(p);
+    updateCart();
+    // فتح السلة تلقائياً
+    cartSidebar.classList.add('active');
+    overlay.style.display = 'block';
+  }
+
+  function updateCart(){
+    cartItems.innerHTML = '';
+    let total = 0;
+    cart.forEach((item, i) => {
+      total += item.price;
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.innerHTML = `
+        <div style="flex:1">
+          <strong>${item.name}</strong>
+        </div>
+        <div style="min-width:70px;text-align:center">$${item.price}</div>
+        <div style="min-width:26px;cursor:pointer;color:#ff5252;" onclick="removeFromCart(${i})"><i class="fa-solid fa-trash"></i></div>
+      `;
+      cartItems.appendChild(div);
+    });
+    cartTotal.textContent = `$${total.toFixed(2)}`;
+    cartCount.textContent = cart.length;
+  }
+
+  function removeFromCart(i){
+    cart.splice(i,1);
+    updateCart();
+  }
+
+  cartIcon.addEventListener('click', () => {
+    cartSidebar.classList.add('active');
+    overlay.style.display = 'block';
+  });
+  closeCart.addEventListener('click', () => {
+    cartSidebar.classList.remove('active');
+    overlay.style.display = 'none';
+  });
+
+  overlay.addEventListener('click', () => {
+    cartSidebar.classList.remove('active');
+    bankModal.classList.remove('active');
+    overlay.style.display = 'none';
+  });
+
+  /********** نافذة الدفع (تجهيز رسالة واتساب) **********/
+  // فتح نافذة الدفع على منتج (يمكن تشغيلها من زر "دفع/إثبات")
+  function openPayment(productId){
+    selectedProduct = productsData.find(x => x.id === productId);
+    if(!selectedProduct) return;
+    // ملخص الطلب
+    orderSummary.innerHTML = `<div>🎯 المنتج: <strong>${selectedProduct.name}</strong></div><div>💰 السعر: <strong>$${selectedProduct.price}</strong></div>`;
+    // افتراضي طريقة الدفع
+    selectedPayMethod = null;
+    // ازالة حالة الأزرار
+    Array.from(payMethods.querySelectorAll('button')).forEach(b => b.classList.remove('active'));
+    // مسح أي إيصال محمل سابق
+    receiptPreview.innerHTML = '';
+    uploadedReceiptDataUrl = null;
+    receiptInput.value = '';
+    // ضبط رابط واتساب (سابقاً)
+    waSend.href = '#';
+    waSend.textContent = 'إرسال إثبات الدفع عبر واتساب';
+    // عرض المودال
+    bankModal.classList.add('active');
+    overlay.style.display = 'block';
+  }
+
+  // تفعيل اختيار طريقة الدفع
+  payMethods.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-method]');
+    if(!btn) return;
+    // ازالة حالة باقي الأزرار
+    Array.from(payMethods.querySelectorAll('button')).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedPayMethod = btn.dataset.method;
+    // تحديث رابط واتساب مع الرسالة الجاهزة
+    updateWhatsAppLink();
+  });
+
+  // تحميل صورة إيصال (عرض معاينة فقط)
+  receiptInput.addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      uploadedReceiptDataUrl = ev.target.result; // بيانات على هيئة dataURL (لا تخزن)
+      receiptPreview.innerHTML = `<img src="${uploadedReceiptDataUrl}" alt="receipt" /> <div style="font-size:12px;color:#666">معاينة الإيصال</div>`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // تحديث رابط واتساب
+  function updateWhatsAppLink(){
+    if(!selectedProduct) return;
+    const productName = selectedProduct.name;
+    const productPrice = selectedProduct.price;
+    const payMethod = selectedPayMethod || 'لم يتم اختيار طريقة الدفع';
+    // الصيغة التي اتفقنا عليها:
+    // مرحبًا، لقد قمت بتحويل المبلغ لطلب:
+    // 🎮 المنتج: {اسم المنتج}
+    // 💰 السعر: {السعر}$
+    // 🏦 طريقة الدفع: {نوع التحويل}
+    // الرجاء تأكيد الطلب
+    let message = `مرحبتًا،%20لقد%20قمت%20بالتحويل%20لطلب:%0A`;
+    message += `🎮%20المنتج:%20${encodeURIComponent(productName)}%0A`;
+    message += `💰%20السعر:%20${encodeURIComponent(productPrice)}$%0A`;
+    message += `🏦%20طريقة%20الدفع:%20${encodeURIComponent(payMethod)}%0A`;
+    message += `الرجاء%20تأكيد%20الطلب.`;
+
+    // ملاحظة: لا يمكن إرفاق الصور تلقائياً عبر رابط wa.me من متصفح فقط
+    // نضيف تعليمًا داخل الرسالة يذكر إرسال الإيصال إن وجد
+    message += `%0A%0A(يرجى%20إرفاق%20صورة%20الإيصال%20في%20الرسالة%20إن%20كانت%20موجودة)`;
+
+    const waLink = `https://wa.me/${MAIN_WA_NUMBER}?text=${message}`;
+    waSend.href = waLink;
+    waSend.textContent = 'فتح محادثة واتساب ونسخ الرسالة (أرسل الإيصال يدوياً)';
+  }
+
+  // عند الضغط على زر الإرسال – تأكد أن طريقة الدفع محددة وإلا نحث المستخدم
+  waSend.addEventListener('click', (e)=>{
+    if(!selectedPayMethod){
+      e.preventDefault();
+      alert('الرجاء اختيار طريقة الدفع أولاً (سيرياتيل كاش، شام كاش، حوالة مكتبية، إلخ).');
+      return;
+    }
+    // ملاحظة توضيحية قبل الانتقال إلى واتساب
+    // نفتح رابط واتساب في نافذة/تبويب جديد كما تم ضبطه في href
+    // المستخدم يستطيع إرفاق صورة الإيصال يدوياً في المحادثة.
+  });
+
+  // اغلاق المودال
+  closeModal.addEventListener('click', ()=>{
+    bankModal.classList.remove('active');
+    overlay.style.display = 'none';
+  });
+
+  /********** وظائف إضافية: افتح الدفع لمنتجات متعددة في السلة **********/
+  // إضافة زر "دفع كامل السلة" في السلة: نحقنه ديناميكياً
+  function injectPayAllButton(){
+    const payAllBtnId = 'payAllBtnCustom';
+    if(document.getElementById(payAllBtnId)) return;
+    const btn = document.createElement('button');
+    btn.id = payAllBtnId;
+    btn.className = 'btn btn-bank';
+    btn.style.width = '100%';
+    btn.style.marginTop = '12px';
+    btn.textContent = 'دفع كل السلة';
+    btn.onclick = ()=>{
+      if(cart.length === 0){ alert('السلة فارغة'); return; }
+      // نجهز ملخص بسيط للطلب (يمكن أن يكون دمج أسماء المنتجات)
+      selectedProduct = { name: cart.map(c=>c.name).join(' + '), price: cart.reduce((s,i)=>s+i.price,0) };
+      orderSummary.innerHTML = `<div>🎯 المنتجات: <strong>${selectedProduct.name}</strong></div><div>💰 الإجمالي: <strong>$${selectedProduct.price}</strong></div>`;
+      // بازالة اختيار طريقة
+      selectedPayMethod = null;
+      Array.from(payMethods.querySelectorAll('button')).forEach(b => b.classList.remove('active'));
+      receiptPreview.innerHTML = '';
+      uploadedReceiptDataUrl = null;
+      receiptInput.value = '';
+      bankModal.classList.add('active');
+      overlay.style.display = 'block';
+    };
+    cartSidebar.appendChild(btn);
+  }
+  injectPayAllButton();
+
+  /********** بدء: تحديث عدد السلة عند التحميل إذا كان هناك قيمة محفوظة (اختياري) **********/
+  updateCart();
+
+  /********** ملاحظات مهمة للموقع الحالي (دون Backend) **********
+    - تحميل إيصال سيعرض المعاينة محليًا فقط (data URL). الصورة لا تُخزن على أي خادم.
+    - لا يمكن إرسال الصورة تلقائياً باستخدام رابط wa.me من المتصفح؛ يجب على المستخدم إرفاقها يدوياً داخل محادثة واتساب بعد الفتح.
+    - للتحقق التلقائي من الدفع/حفظ الإيصالات، يلزمك برمجة Backend (خادم) أو استخدام WhatsApp Business API أو خدمة تخزين مثل S3.
+  *******************************************************/
+
+  // تعرض إرشاد صغير للمستخدم فور الدخول (اختياري)
+  window.addEventListener('load', ()=>{
+    // يمكنك إزالة أو تعطيل السطر التالي إذا أردت
+    // alert('مرحبًا! يمكنك الآن إضافة منتجات إلى السلة واستخدام زر "دفع/إثبات" لإرسال رسالة واتساب تلقائيًا.');
+  });
+
+  // بعض الدوال المساعدة العالمية لتسهيل استدعاء من عناصر HTML
+  window.addToCart = addToCart;
+  window.openPayment = openPayment;
+  window.removeFromCart = removeFromCart;
+
+</script>
